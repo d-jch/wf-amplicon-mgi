@@ -1,0 +1,212 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/d-jch/wf-amplicon-mgi/main/nextflow_schema.json",
+    "title": "wf-amplicon-mgi pipeline parameters",
+    "description": "MGI long-read haploid amplicon de novo consensus workflow",
+    "type": "object",
+    "definitions": {
+        "io": {
+            "title": "Input/Output",
+            "type": "object",
+            "fa_icon": "fas fa-terminal",
+            "description": "Input FASTQ and output directory.",
+            "required": ["fastq"],
+            "properties": {
+                "fastq": {
+                    "type": "string",
+                    "description": "Path to FASTQ file, flat directory of FASTQ files, or directory of barcode sub-directories.",
+                    "help_text": "Accepts: a single .fastq/.fq/.fastq.gz/.fq.gz file; a directory containing FASTQ files (treated as one sample); or a directory containing barcode sub-directories (barcode01, barcode02, …).",
+                    "fa_icon": "fas fa-file-alt"
+                },
+                "out_dir": {
+                    "type": "string",
+                    "default": "output",
+                    "description": "Output directory for results.",
+                    "fa_icon": "fas fa-folder-open"
+                },
+                "sample": {
+                    "type": "string",
+                    "description": "Override the sample name (single-sample runs only).",
+                    "fa_icon": "fas fa-id-badge"
+                }
+            }
+        },
+        "read_filtering": {
+            "title": "Read Filtering",
+            "type": "object",
+            "fa_icon": "fas fa-filter",
+            "description": "Filter reads by length and quality before assembly.",
+            "properties": {
+                "min_read_length": {
+                    "type": "integer",
+                    "default": 200,
+                    "description": "Minimum read length (bp). Reads shorter than this are discarded.",
+                    "fa_icon": "fas fa-arrows-alt-h"
+                },
+                "max_read_length": {
+                    "type": "integer",
+                    "description": "Maximum read length (bp). Reads longer than this are discarded. Leave unset to disable.",
+                    "fa_icon": "fas fa-arrows-alt-h"
+                },
+                "min_read_qual": {
+                    "type": "number",
+                    "description": "Minimum mean base quality. Reads below this are discarded. Leave unset to disable.",
+                    "fa_icon": "fas fa-star"
+                },
+                "min_n_reads": {
+                    "type": "integer",
+                    "default": 20,
+                    "description": "Minimum number of reads required per sample after filtering. Samples with fewer reads are skipped.",
+                    "fa_icon": "fas fa-sort-numeric-up"
+                }
+            }
+        },
+        "subsampling": {
+            "title": "Read Subsampling",
+            "type": "object",
+            "fa_icon": "fas fa-random",
+            "description": "Control how reads are subsampled before assembly.",
+            "properties": {
+                "reads_downsampling_size": {
+                    "type": "integer",
+                    "default": 1500,
+                    "description": "Target number of reads to use for assembly. Set to 0 to disable downsampling.",
+                    "fa_icon": "fas fa-compress-alt"
+                },
+                "drop_frac_longest_reads": {
+                    "type": "number",
+                    "default": 0.0,
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": "Drop this fraction of the longest reads before subsampling. Useful to remove concatemers (e.g. 0.05 drops the top 5%).",
+                    "fa_icon": "fas fa-cut"
+                },
+                "take_longest_remaining_reads": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "After dropping the longest fraction, take the longest reads from the remainder (instead of random sampling).",
+                    "fa_icon": "fas fa-sort-amount-down"
+                }
+            }
+        },
+        "assembly": {
+            "title": "Assembly",
+            "type": "object",
+            "fa_icon": "fas fa-dna",
+            "description": "Parameters controlling de novo assembly with miniasm and racon.",
+            "properties": {
+                "overlap_preset": {
+                    "type": "string",
+                    "default": "ava-pb",
+                    "enum": ["ava-pb", "ava-ont", "ava-hifi"],
+                    "description": "minimap2 preset for all-vs-all read overlap used by miniasm and racon. Choose to match your long-read platform.",
+                    "fa_icon": "fas fa-project-diagram"
+                },
+                "minimap2_preset": {
+                    "type": "string",
+                    "default": "map-pb",
+                    "enum": ["map-pb", "map-ont", "map-hifi"],
+                    "description": "minimap2 preset for read-to-consensus alignment. Choose to match your long-read platform.",
+                    "fa_icon": "fas fa-map-marked"
+                },
+                "force_spoa_length_threshold": {
+                    "type": "integer",
+                    "default": 2000,
+                    "description": "If the longest miniasm contig is shorter than this (bp), fall back to SPOA.",
+                    "fa_icon": "fas fa-ruler"
+                }
+            }
+        },
+        "spoa_options": {
+            "title": "SPOA (fallback assembler)",
+            "type": "object",
+            "fa_icon": "fas fa-life-ring",
+            "description": "Options for SPOA partial order alignment, used when miniasm fails.",
+            "properties": {
+                "spoa_minimum_relative_coverage": {
+                    "type": "number",
+                    "default": 0.15,
+                    "description": "Minimum fraction of reads required to support the SPOA POA graph consensus.",
+                    "fa_icon": "fas fa-layer-group"
+                },
+                "spoa_max_allowed_read_length": {
+                    "type": "integer",
+                    "default": 5000,
+                    "description": "Maximum read length accepted by SPOA. Reads longer than this cause SPOA to abort.",
+                    "fa_icon": "fas fa-ruler-combined"
+                }
+            }
+        },
+        "qc": {
+            "title": "Quality Control",
+            "type": "object",
+            "fa_icon": "fas fa-check-circle",
+            "description": "Thresholds for accepting a consensus sequence.",
+            "properties": {
+                "minimum_mean_depth": {
+                    "type": "integer",
+                    "default": 30,
+                    "description": "Minimum mean read depth required over the consensus. Samples below this are marked as failed.",
+                    "fa_icon": "fas fa-chart-bar"
+                },
+                "primary_alignments_threshold": {
+                    "type": "number",
+                    "default": 0.7,
+                    "description": "Minimum fraction of reads that must have a primary alignment to the consensus.",
+                    "fa_icon": "fas fa-percentage"
+                },
+                "number_depth_windows": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Number of windows used for windowed depth calculation in QC output.",
+                    "fa_icon": "fas fa-th"
+                }
+            }
+        },
+        "resources": {
+            "title": "Resources",
+            "type": "object",
+            "fa_icon": "fas fa-server",
+            "description": "Compute resource settings.",
+            "properties": {
+                "threads": {
+                    "type": "integer",
+                    "default": 4,
+                    "description": "Maximum number of CPU threads to use per process.",
+                    "fa_icon": "fas fa-microchip"
+                }
+            }
+        },
+        "misc": {
+            "title": "Miscellaneous",
+            "type": "object",
+            "fa_icon": "fas fa-cog",
+            "properties": {
+                "help": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Display help text.",
+                    "fa_icon": "fas fa-question-circle",
+                    "hidden": true
+                },
+                "version": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Display version and exit.",
+                    "fa_icon": "fas fa-info-circle",
+                    "hidden": true
+                }
+            }
+        }
+    },
+    "allOf": [
+        {"$ref": "#/definitions/io"},
+        {"$ref": "#/definitions/read_filtering"},
+        {"$ref": "#/definitions/subsampling"},
+        {"$ref": "#/definitions/assembly"},
+        {"$ref": "#/definitions/spoa_options"},
+        {"$ref": "#/definitions/qc"},
+        {"$ref": "#/definitions/resources"},
+        {"$ref": "#/definitions/misc"}
+    ]
+}
