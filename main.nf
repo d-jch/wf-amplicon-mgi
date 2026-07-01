@@ -217,7 +217,7 @@ workflow {
             ch_reads,
             params.drop_frac_longest_reads ?: 0,
             params.take_longest_remaining_reads,
-            params.reads_downsampling_size,
+            params.reads_downsampling_size
         )
     } else if (params.reads_downsampling_size) {
         ch_reads = downsampleReads(ch_reads, params.reads_downsampling_size)

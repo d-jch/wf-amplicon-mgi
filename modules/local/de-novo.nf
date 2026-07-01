@@ -180,8 +180,7 @@ workflow pipeline {
             | branch { meta, reads, asm, status ->
                 passed: status == "passed"
                 failed: status == "failed"
-                err: error "Post-assembly status is neither 'passed' nor 'failed' " +
-                    "for sample '${meta.alias}'."
+                err: error "Post-assembly status is neither 'passed' nor 'failed'."
             }
 
             ch_draft = ch_branched.passed
