@@ -1,0 +1,18 @@
+name: wf-amplicon-mgi
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.8
+  - minimap2
+  - miniasm
+  - racon
+  - samtools
+  - mosdepth
+  - seqkit
+  - bamstats
+  - htslib
+  - pysam
+  - pandas
+  - python-spoa

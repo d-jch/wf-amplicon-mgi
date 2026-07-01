@@ -35,7 +35,8 @@ Input FASTQ
 
 ## Requirements
 
-The following tools must be available in the execution environment:
+By default, the workflow runs with tools from your local environment.
+The following tools must be available:
 
 | Tool | Purpose |
 |------|---------|
@@ -50,8 +51,12 @@ The following tools must be available in the execution environment:
 | `bgzip` | FASTQ compression |
 | Python ≥ 3.8 with `pysam`, `pandas` | Python helper scripts |
 
-When using Docker/Singularity, a suitable container is specified in
-`nextflow.config`. Adjust the container image as needed.
+Alternative runtime profiles:
+
+- `-profile singularity`: runs all `wfamplicon` processes in the configured
+  Singularity image.
+- `-profile micromamba`: resolves tools from `envs/wf-amplicon-mgi.yml` using
+  micromamba.
 
 ---
 
@@ -65,8 +70,7 @@ cd wf-amplicon-mgi
 # Single FASTQ file
 nextflow run main.nf \
     --fastq /path/to/sample.fastq.gz \
-    --out_dir results \
-    -profile standard
+    --out_dir results
 
 # Directory of FASTQ files (treated as one sample)
 nextflow run main.nf \
@@ -78,6 +82,18 @@ nextflow run main.nf \
 nextflow run main.nf \
     --fastq /path/to/run_dir/ \
     --out_dir results
+
+# Run with Singularity
+nextflow run main.nf \
+    --fastq /path/to/sample.fastq.gz \
+    --out_dir results \
+    -profile singularity
+
+# Run with Micromamba
+nextflow run main.nf \
+    --fastq /path/to/sample.fastq.gz \
+    --out_dir results \
+    -profile micromamba
 ```
 
 ---
